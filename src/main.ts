@@ -9,6 +9,7 @@ import {
 import {
   createShopScene,
 } from "./scenes/ShopScene";
+import { applyPresentationPolish } from "./systems/PresentationPolish";
 
 interface SaleDetail {
   item: string;
@@ -59,22 +60,31 @@ engine.setHardwareScalingLevel(
 );
 
 const scene = createShopScene(engine, canvas);
+applyPresentationPolish(scene);
 
 if (!(scene.activeCamera instanceof UniversalCamera)) {
   throw new Error("The player camera failed to initialise.");
 }
 
 const camera = scene.activeCamera;
-camera.position.set(2.25, 1.72, 3.65);
-camera.setTarget(new Vector3(1.15, 1.42, -2.95));
+
+/*
+ * Fixed-counter composition.
+ * The player does not navigate the room. The camera behaves like a
+ * person standing at the register: a comfortable forward view with
+ * only enough look range to follow customers and glance at the POS.
+ */
+camera.position.set(2.25, 1.74, 4.05);
+camera.setTarget(new Vector3(1.00, 1.32, -1.95));
 camera.inputs.clear();
 camera.speed = 0;
 camera.inertia = 0;
+camera.fov = 0.82;
 
 const centreYaw = camera.rotation.y;
 const centrePitch = camera.rotation.x;
-const maxYaw = 0.46;
-const maxPitch = 0.16;
+const maxYaw = 0.30;
+const maxPitch = 0.085;
 
 let targetYaw = centreYaw;
 let targetPitch = centrePitch;
@@ -145,13 +155,13 @@ canvas.addEventListener("pointermove", (event) => {
   lastLookY = event.clientY;
 
   targetYaw = clamp(
-    targetYaw + deltaX * 0.0028,
+    targetYaw + deltaX * 0.0018,
     centreYaw - maxYaw,
     centreYaw + maxYaw,
   );
 
   targetPitch = clamp(
-    targetPitch + deltaY * 0.0022,
+    targetPitch + deltaY * 0.0012,
     centrePitch - maxPitch,
     centrePitch + maxPitch,
   );
@@ -171,7 +181,7 @@ canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 
 window.addEventListener("shop:customer-ready", () => {
   objectiveText.textContent = "Your customer is ready to pay";
-  interactionPrompt.textContent = "TAP THE GREEN TILL SCREEN TO CHARGE $18";
+  interactionPrompt.textContent = "TAP THE TILL SCREEN TO CHARGE $18";
   interactionPrompt.classList.remove("hidden");
   lookHint.classList.add("faded");
 });
@@ -197,8 +207,8 @@ window.addEventListener("shop:sale-completed", (event) => {
 updateBusinessHud();
 
 engine.runRenderLoop(() => {
-  camera.rotation.y += (targetYaw - camera.rotation.y) * 0.16;
-  camera.rotation.x += (targetPitch - camera.rotation.x) * 0.16;
+  camera.rotation.y += (targetYaw - camera.rotation.y) * 0.14;
+  camera.rotation.x += (targetPitch - camera.rotation.x) * 0.14;
   scene.render();
 });
 
