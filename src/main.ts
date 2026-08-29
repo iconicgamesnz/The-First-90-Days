@@ -3,12 +3,12 @@ import "./style.css";
 import {
   Engine,
   UniversalCamera,
+  Vector3,
 } from "@babylonjs/core";
 
 import {
   createShopScene,
 } from "./scenes/ShopScene";
-import { MobileControls } from "./systems/MobileControls";
 
 const canvas =
   document.getElementById(
@@ -30,17 +30,11 @@ const hud =
     "hud",
   ) as HTMLElement;
 
-const mobileControls =
-  document.getElementById(
-    "mobile-controls",
-  ) as HTMLElement;
-
 if (
   !canvas ||
   !titleScreen ||
   !startButton ||
-  !hud ||
-  !mobileControls
+  !hud
 ) {
   throw new Error(
     "The First 90 Days UI failed to initialise.",
@@ -67,10 +61,89 @@ if (!(scene.activeCamera instanceof UniversalCamera)) {
   throw new Error("The player camera failed to initialise.");
 }
 
-new MobileControls(
-  scene,
-  scene.activeCamera,
-);
+const camera = scene.activeCamera;
+
+/*
+ * COUNTER VIEW
+ *
+ * The player runs the business from behind the counter.
+ * There is no walking in this mentor prototype. Customers,
+ * workers and events move through the scene in front of them.
+ */
+camera.detachControl(canvas);
+camera.position.set(2.25, 1.72, 3.65);
+camera.setTarget(new Vector3(1.45, 1.55, -2.8));
+camera.applyGravity = false;
+camera.checkCollisions = false;
+camera.speed = 0;
+camera.inertia = 0;
+camera.keysUp = [];
+camera.keysDown = [];
+camera.keysLeft = [];
+camera.keysRight = [];
+
+const centreYaw = camera.rotation.y;
+const centrePitch = camera.rotation.x;
+const maxYaw = 0.58;
+const maxPitch = 0.20;
+
+let lookPointerId: number | null = null;
+let lastLookX = 0;
+let lastLookY = 0;
+
+function clamp(
+  value: number,
+  minimum: number,
+  maximum: number,
+): number {
+  return Math.max(minimum, Math.min(maximum, value));
+}
+
+canvas.addEventListener("pointerdown", (event) => {
+  if (lookPointerId !== null) {
+    return;
+  }
+
+  lookPointerId = event.pointerId;
+  lastLookX = event.clientX;
+  lastLookY = event.clientY;
+  canvas.setPointerCapture(event.pointerId);
+});
+
+canvas.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== lookPointerId) {
+    return;
+  }
+
+  const deltaX = event.clientX - lastLookX;
+  const deltaY = event.clientY - lastLookY;
+
+  lastLookX = event.clientX;
+  lastLookY = event.clientY;
+
+  camera.rotation.y = clamp(
+    camera.rotation.y + deltaX * 0.0032,
+    centreYaw - maxYaw,
+    centreYaw + maxYaw,
+  );
+
+  camera.rotation.x = clamp(
+    camera.rotation.x + deltaY * 0.0024,
+    centrePitch - maxPitch,
+    centrePitch + maxPitch,
+  );
+});
+
+function releaseLook(event: PointerEvent): void {
+  if (event.pointerId !== lookPointerId) {
+    return;
+  }
+
+  lookPointerId = null;
+}
+
+canvas.addEventListener("pointerup", releaseLook);
+canvas.addEventListener("pointercancel", releaseLook);
 
 let hasStarted = false;
 
@@ -89,49 +162,12 @@ function beginGame(): void {
     "hidden",
   );
 
-  mobileControls.classList.remove(
-    "hidden",
-  );
-
   canvas.focus();
-
-  const desktopPointer =
-    window.matchMedia(
-      "(hover: hover) and (pointer: fine)",
-    ).matches;
-
-  if (
-    desktopPointer &&
-    canvas.requestPointerLock
-  ) {
-    canvas.requestPointerLock();
-  }
 }
 
 startButton.addEventListener(
   "click",
   beginGame,
-);
-
-canvas.addEventListener(
-  "click",
-  () => {
-    if (!hasStarted) {
-      return;
-    }
-
-    const desktopPointer =
-      window.matchMedia(
-        "(hover: hover) and (pointer: fine)",
-      ).matches;
-
-    if (
-      desktopPointer &&
-      document.pointerLockElement !== canvas
-    ) {
-      canvas.requestPointerLock?.();
-    }
-  },
 );
 
 engine.runRenderLoop(
