@@ -4,11 +4,12 @@ import {
   Vector3,
 } from "@babylonjs/core";
 
+import { AnimatedNPC } from "../entities/AnimatedNPC";
 import { NPC } from "../entities/NPC";
 
 export class CinematicDirector {
   private readonly scene: Scene;
-  private readonly npcs: NPC[] = [];
+  private readonly npcs: Array<NPC | AnimatedNPC> = [];
 
   private lastFrame = performance.now();
 
@@ -25,13 +26,14 @@ export class CinematicDirector {
   private createShopLife(): void {
     /*
      * CUSTOMER 1
-     * Enters/browses around produce and shelves.
+     * First real rigged character test. She enters and browses
+     * the same route the primitive customer previously used.
      */
-    const customerOne = new NPC(
+    const customerOne = new AnimatedNPC(
       this.scene,
       "Customer One",
       new Vector3(-6.2, 0, -6.0),
-      new Color3(0.12, 0.42, 0.28),
+      "female",
     );
 
     customerOne.setRoute(
@@ -48,7 +50,8 @@ export class CinematicDirector {
 
     /*
      * CUSTOMER 2
-     * Moves from shelves toward checkout.
+     * Keep the known-good primitive while the first rigged
+     * customer is being proved in the live scene.
      */
     const customerTwo = new NPC(
       this.scene,
