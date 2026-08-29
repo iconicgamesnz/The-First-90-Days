@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <meta name="theme-color" content="#10261c" />
+  <title>The First 90 Days</title>
+</head>
+
+<body>
+  <main id="game-shell">
+    <canvas id="game" tabindex="0"></canvas>
+
+    <section id="title-screen">
+      <div class="title-backdrop"></div>
+
+      <div class="title-content">
+        <img
+          id="brand-logo"
+          src="/game-assets/first-90-days-assets/generated-assets/pakihi-makete-logo-reference.png"
+          alt="Pākihi Mākete"
+        />
+
+        <div class="title-eyebrow">YOUR BUSINESS. YOUR DECISIONS.</div>
+
+        <h1>
+          <span>THE FIRST</span>
+          <strong>90 DAYS</strong>
+        </h1>
+
+        <p>Build it. Run it. See what happens.</p>
+
+        <button id="start-game" type="button">
+          BEGIN DAY 1
+        </button>
+      </div>
+    </section>
+
+    <section id="hud" class="hidden">
+      <div class="top-hud">
+        <div class="hud-panel">
+          <small>DAY</small>
+          <strong id="day-value">1</strong>
+        </div>
+
+        <div class="hud-panel money">
+          <small>PŪTEA</small>
+          <strong id="cash-value">$380</strong>
+        </div>
+      </div>
+
+      <div id="objective-panel">
+        <small>CURRENT OBJECTIVE</small>
+        <strong id="objective-text">
+          Take a look around your new shop
+        </strong>
+      </div>
+
+      <div id="interaction-prompt" class="hidden">
+        INTERACT
+      </div>
+
+      <div id="crosshair"></div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
