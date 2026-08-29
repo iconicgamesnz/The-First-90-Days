@@ -39,6 +39,7 @@ button {
   height: 100%;
   display: block;
   outline: none;
+  touch-action: none;
 }
 
 .hidden {
@@ -57,63 +58,58 @@ button {
 .title-backdrop {
   position: absolute;
   inset: 0;
-
   background:
     linear-gradient(
       180deg,
-      rgba(8, 29, 20, 0.45),
-      rgba(6, 20, 14, 0.88)
+      rgba(7, 25, 18, 0.38),
+      rgba(6, 20, 14, 0.90)
     ),
     url("/game-assets/first-90-days-assets/generated-assets/market-hub-reference.png");
-
   background-size: cover;
   background-position: center center;
-  filter: saturate(1.02);
-  transform: scale(1.03);
+  filter: saturate(1.03) contrast(1.02);
+  transform: scale(1.025);
 }
 
 .title-content {
   position: relative;
   z-index: 2;
-
   width: 100%;
   height: 100%;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   padding: 24px;
   text-align: center;
 }
 
 #brand-logo {
-  width: min(82vw, 420px);
-  max-height: 200px;
+  width: min(74vw, 390px);
+  max-height: 170px;
   object-fit: contain;
-  margin-bottom: 14px;
-  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45));
+  margin-bottom: 12px;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.48));
 }
 
 .title-eyebrow {
-  margin-bottom: 14px;
+  margin-bottom: 13px;
   color: #e1cb8f;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.26em;
 }
 
 #title-screen h1 {
   margin: 0;
-  line-height: 0.9;
+  line-height: 0.90;
 }
 
 #title-screen h1 span {
   display: block;
   color: #f1ddaa;
   font-family: Georgia, serif;
-  font-size: clamp(30px, 8vw, 66px);
+  font-size: clamp(28px, 7vw, 58px);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-shadow:
@@ -123,29 +119,30 @@ button {
 
 #title-screen h1 strong {
   display: block;
-  margin-top: 8px;
+  margin-top: 7px;
   color: #ffe4a0;
   font-family: Georgia, serif;
-  font-size: clamp(64px, 19vw, 148px);
+  font-size: clamp(58px, 17vw, 132px);
   font-weight: 900;
   text-shadow:
     0 5px 0 #71471e,
-    0 12px 34px rgba(0, 0, 0, 0.7);
+    0 12px 34px rgba(0, 0, 0, 0.70);
 }
 
 #title-screen p {
-  margin: 22px 0 0;
-  color: rgba(255, 247, 223, 0.88);
+  max-width: 520px;
+  margin: 20px 0 0;
+  color: rgba(255, 247, 223, 0.90);
   font-family: Georgia, serif;
-  font-size: 15px;
-  letter-spacing: 0.04em;
+  font-size: 14px;
+  letter-spacing: 0.03em;
 }
 
 #start-game {
-  min-width: 210px;
+  min-width: 218px;
   min-height: 56px;
-  margin-top: 34px;
-  padding: 14px 26px;
+  margin-top: 30px;
+  padding: 14px 27px;
   border: 1px solid #d9bd72;
   border-radius: 14px;
   color: #fff6d8;
@@ -160,7 +157,7 @@ button {
   letter-spacing: 0.12em;
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.18),
-    0 10px 30px rgba(0, 0, 0, 0.38);
+    0 12px 30px rgba(0, 0, 0, 0.40);
 }
 
 #start-game:active {
@@ -178,34 +175,41 @@ button {
 
 .top-hud {
   position: absolute;
-  top: max(12px, env(safe-area-inset-top));
-  left: 12px;
-  right: 12px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  top: max(10px, env(safe-area-inset-top));
+  left: 10px;
+  right: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 10px;
 }
 
-.hud-panel {
-  min-width: 82px;
-  padding: 8px 13px;
-  border: 1px solid rgba(218, 183, 103, 0.5);
-  border-radius: 11px;
+.hud-panel,
+.metric-chip {
+  border: 1px solid rgba(221, 189, 111, 0.44);
   background:
     linear-gradient(
       180deg,
-      rgba(47, 80, 59, 0.94),
-      rgba(15, 43, 30, 0.94)
+      rgba(42, 77, 56, 0.93),
+      rgba(12, 39, 27, 0.93)
     );
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(7px);
+}
+
+.hud-panel {
+  min-width: 78px;
+  padding: 8px 12px;
+  border-radius: 11px;
 }
 
 .hud-panel small,
+.metric-chip small,
 #objective-panel small {
   display: block;
   color: #d2bd80;
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 8px;
+  font-weight: 900;
   letter-spacing: 0.14em;
 }
 
@@ -220,169 +224,203 @@ button {
   text-align: right;
 }
 
+.business-metrics {
+  justify-self: center;
+  display: flex;
+  gap: 6px;
+}
+
+.metric-chip {
+  min-width: 86px;
+  padding: 6px 9px 7px;
+  border-radius: 9px;
+  text-align: center;
+}
+
+.metric-chip strong {
+  display: block;
+  margin-top: 2px;
+  color: #fff7df;
+  font-family: Georgia, serif;
+  font-size: 15px;
+}
+
 #objective-panel {
   position: absolute;
-  top: max(76px, calc(env(safe-area-inset-top) + 70px));
+  top: max(71px, calc(env(safe-area-inset-top) + 66px));
   left: 50%;
-  width: min(88%, 440px);
-  padding: 9px 14px;
+  width: min(78%, 470px);
+  padding: 8px 14px 9px;
   transform: translateX(-50%);
-  border: 1px solid rgba(215, 181, 100, 0.38);
+  border: 1px solid rgba(215, 181, 100, 0.34);
   border-radius: 10px;
   text-align: center;
-  background: rgba(12, 39, 27, 0.84);
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.23);
+  background: rgba(10, 34, 23, 0.77);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.21);
+  backdrop-filter: blur(6px);
 }
 
 #objective-panel strong {
   display: block;
   margin-top: 3px;
   color: #fff7df;
-  font-size: 13px;
-}
-
-#crosshair {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: rgba(255, 244, 205, 0.88);
-  box-shadow: 0 1px 6px #000;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 #interaction-prompt {
   position: absolute;
   left: 50%;
-  bottom: 15%;
+  bottom: max(10%, calc(env(safe-area-inset-bottom) + 50px));
   transform: translateX(-50%);
-  padding: 10px 15px;
-  border: 1px solid rgba(217, 189, 114, 0.6);
-  border-radius: 9px;
-  background: rgba(10, 34, 23, 0.9);
-  color: #fff1c7;
+  width: min(88%, 440px);
+  padding: 12px 17px;
+  border: 1px solid rgba(232, 202, 126, 0.72);
+  border-radius: 12px;
+  text-align: center;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(22, 73, 50, 0.95),
+      rgba(8, 42, 29, 0.95)
+    );
+  color: #fff3cf;
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
+  box-shadow:
+    0 9px 28px rgba(0, 0, 0, 0.30),
+    inset 0 1px rgba(255, 255, 255, 0.10);
+  animation: promptPulse 1.7s ease-in-out infinite;
 }
 
-/* ---------- MOBILE CONTROLS ---------- */
-
-#mobile-controls {
+#look-hint {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-#move-zone,
-#look-zone {
-  position: absolute;
-  bottom: max(24px, calc(env(safe-area-inset-bottom) + 18px));
-  width: 132px;
-  height: 132px;
-  pointer-events: auto;
-  touch-action: none;
-}
-
-#move-zone {
-  left: 18px;
-}
-
-#look-zone {
-  right: 18px;
-  border: 1px solid rgba(255, 247, 223, 0.18);
-  border-radius: 32px;
-  background: rgba(10, 34, 23, 0.16);
-  transition: background 120ms ease, border-color 120ms ease;
-}
-
-#look-zone.active {
-  border-color: rgba(225, 203, 143, 0.45);
-  background: rgba(10, 34, 23, 0.30);
-}
-
-#move-ring {
-  position: absolute;
-  top: 50%;
   left: 50%;
-  width: 104px;
-  height: 104px;
-  transform: translate(-50%, -50%);
-  border: 2px solid rgba(255, 247, 223, 0.28);
-  border-radius: 50%;
-  background: rgba(10, 34, 23, 0.26);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.16);
-}
-
-#move-knob {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 48px;
-  height: 48px;
-  transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 247, 223, 0.48);
-  border-radius: 50%;
-  background: rgba(48, 91, 65, 0.80);
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.26);
-}
-
-.control-label {
-  position: absolute;
-  top: -7px;
-  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  color: rgba(255, 247, 223, 0.60);
-  font-size: 9px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(6, 25, 17, 0.52);
+  color: rgba(255, 247, 223, 0.76);
+  font-size: 8px;
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
+  transition: opacity 450ms ease;
 }
 
-.look-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: rgba(255, 247, 223, 0.58);
-  font-size: 35px;
-  line-height: 1;
+#look-hint.faded {
+  opacity: 0;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  #mobile-controls {
-    display: none !important;
+@keyframes promptPulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.018);
+  }
+}
+
+@media (max-width: 720px) {
+  .business-metrics {
+    gap: 4px;
+  }
+
+  .metric-chip {
+    min-width: 66px;
+    padding: 6px 6px;
+  }
+
+  .metric-chip small {
+    font-size: 6.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .metric-chip strong {
+    font-size: 13px;
+  }
+
+  .hud-panel {
+    min-width: 66px;
+    padding: 7px 9px;
+  }
+
+  .hud-panel strong {
+    font-size: 17px;
+  }
+
+  #objective-panel {
+    top: 66px;
+    width: min(82%, 420px);
   }
 }
 
 @media (max-width: 480px) {
   .title-content {
-    padding: 18px;
+    padding: 16px;
   }
 
   #brand-logo {
-    width: min(88vw, 360px);
-    max-height: 160px;
+    width: min(82vw, 330px);
+    max-height: 140px;
+  }
+
+  #title-screen p {
+    font-size: 13px;
+  }
+
+  #start-game {
+    margin-top: 24px;
+  }
+
+  .top-hud {
+    gap: 6px;
+  }
+
+  .business-metrics {
+    transform: scale(0.91);
+    transform-origin: top center;
   }
 
   #objective-panel {
-    top: 75px;
+    top: 64px;
+    width: 88%;
   }
 
-  #move-zone,
-  #look-zone {
-    width: 118px;
-    height: 118px;
+  #objective-panel strong {
+    font-size: 11px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  #brand-logo {
+    max-height: 82px;
+    margin-bottom: 6px;
   }
 
-  #move-ring {
-    width: 94px;
-    height: 94px;
+  .title-eyebrow {
+    margin-bottom: 7px;
   }
 
-  #move-knob {
-    width: 44px;
-    height: 44px;
+  #title-screen h1 strong {
+    font-size: clamp(48px, 13vw, 92px);
+  }
+
+  #title-screen p {
+    margin-top: 12px;
+  }
+
+  #start-game {
+    min-height: 46px;
+    margin-top: 16px;
+  }
+
+  #objective-panel {
+    top: 58px;
+  }
+
+  #interaction-prompt {
+    bottom: 11%;
   }
 }
