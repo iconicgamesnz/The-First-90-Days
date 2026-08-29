@@ -1,7 +1,10 @@
 import {
   AnimationGroup,
+  Color3,
+  MeshBuilder,
   Scene,
   SceneLoader,
+  StandardMaterial,
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
@@ -11,6 +14,14 @@ import "@babylonjs/loaders/glTF";
 
 export type AnimatedNPCVariant = "female" | "male";
 
+export interface AnimatedNPCLook {
+  topColor: Color3;
+  lowerColor: Color3;
+  hairColor: Color3;
+  accentColor?: Color3;
+  scale?: number;
+}
+
 const CHARACTER_ROOT =
   "/game-assets/models/characters/quaternius/base/";
 
@@ -19,11 +30,20 @@ const ANIMATION_ROOT =
 
 const ANIMATION_FILE = "UAL1_Standard.glb";
 
+const DEFAULT_LOOK: AnimatedNPCLook = {
+  topColor: new Color3(0.10, 0.34, 0.24),
+  lowerColor: new Color3(0.20, 0.13, 0.08),
+  hairColor: new Color3(0.08, 0.045, 0.025),
+  accentColor: new Color3(0.72, 0.56, 0.27),
+  scale: 0.96,
+};
+
 export class AnimatedNPC {
   public readonly root: TransformNode;
 
   private readonly scene: Scene;
   private readonly variant: AnimatedNPCVariant;
+  private readonly look: AnimatedNPCLook;
 
   private waypoints: Vector3[] = [];
   private waypointIndex = 0;
@@ -41,12 +61,17 @@ export class AnimatedNPC {
     name: string,
     position: Vector3,
     variant: AnimatedNPCVariant = "female",
+    look: AnimatedNPCLook = DEFAULT_LOOK,
   ) {
     this.scene = scene;
     this.variant = variant;
+    this.look = look;
 
     this.root = new TransformNode(name, scene);
     this.root.position.copyFrom(position);
+
+    const scale = look.scale ?? 0.96;
+    this.root.scaling.set(scale, scale, scale);
 
     void this.loadCharacter(name);
   }
@@ -89,7 +114,7 @@ export class AnimatedNPC {
       this.waypointIndex =
         (this.waypointIndex + 1) % this.waypoints.length;
 
-      this.stopFor(700 + Math.random() * 1400);
+      this.stopFor(650 + Math.random() * 1100);
       return;
     }
 
@@ -131,6 +156,8 @@ export class AnimatedNPC {
         mesh.isPickable = false;
         mesh.checkCollisions = false;
       }
+
+      this.createStylisedOutfit(name);
 
       const targetByName = new Map<string, Node>(
         [
@@ -180,16 +207,127 @@ export class AnimatedNPC {
           ? "walk"
           : "idle",
       );
-
-      console.info(
-        `[AnimatedNPC] ${name} loaded with idle/walk animation.`,
-      );
     } catch (error) {
       console.error(
         `[AnimatedNPC] Failed to load ${name}.`,
         error,
       );
     }
+  }
+
+  private createStylisedOutfit(name: string): void {
+    const topMaterial = this.makeMaterial(
+      `${name}-top-material`,
+      this.look.topColor,
+    );
+
+    const lowerMaterial = this.makeMaterial(
+      `${name}-lower-material`,
+      this.look.lowerColor,
+    );
+
+    const hairMaterial = this.makeMaterial(
+      `${name}-hair-material`,
+      this.look.hairColor,
+    );
+
+    const accentMaterial = this.makeMaterial(
+      `${name}-accent-material`,
+      this.look.accentColor ?? new Color3(0.72, 0.56, 0.27),
+    );
+
+    const top = MeshBuilder.CreateCylinder(
+      `${name}-top-shell`,
+      {
+        height: 0.72,
+        diameterTop: 0.64,
+        diameterBottom: 0.56,
+        tessellation: 20,
+      },
+      this.scene,
+    );
+
+    top.parent = this.root;
+    top.position.set(0, 1.20, 0);
+    top.material = topMaterial;
+    top.isPickable = false;
+    top.checkCollisions = false;
+
+    const lower = MeshBuilder.CreateCylinder(
+      `${name}-lower-shell`,
+      {
+        height: this.variant === "female" ? 0.50 : 0.42,
+        diameterTop: 0.57,
+        diameterBottom: this.variant === "female" ? 0.69 : 0.58,
+        tessellation: 20,
+      },
+      this.scene,
+    );
+
+    lower.parent = this.root;
+    lower.position.set(0, 0.78, 0);
+    lower.material = lowerMaterial;
+    lower.isPickable = false;
+    lower.checkCollisions = false;
+
+    const belt = MeshBuilder.CreateTorus(
+      `${name}-belt`,
+      {
+        diameter: 0.56,
+        thickness: 0.035,
+        tessellation: 24,
+      },
+      this.scene,
+    );
+
+    belt.parent = this.root;
+    belt.position.set(0, 0.98, 0);
+    belt.rotation.x = Math.PI / 2;
+    belt.material = accentMaterial;
+    belt.isPickable = false;
+
+    const hair = MeshBuilder.CreateSphere(
+      `${name}-hair-cap`,
+      {
+        diameter: 0.43,
+        segments: 16,
+      },
+      this.scene,
+    );
+
+    hair.parent = this.root;
+    hair.position.set(0, 1.76, -0.10);
+    hair.scaling.set(1.0, 0.62, 0.92);
+    hair.material = hairMaterial;
+    hair.isPickable = false;
+    hair.checkCollisions = false;
+
+    if (this.variant === "female") {
+      const bun = MeshBuilder.CreateSphere(
+        `${name}-hair-bun`,
+        {
+          diameter: 0.20,
+          segments: 12,
+        },
+        this.scene,
+      );
+
+      bun.parent = this.root;
+      bun.position.set(0, 1.91, -0.20);
+      bun.material = hairMaterial;
+      bun.isPickable = false;
+      bun.checkCollisions = false;
+    }
+  }
+
+  private makeMaterial(
+    name: string,
+    color: Color3,
+  ): StandardMaterial {
+    const material = new StandardMaterial(name, this.scene);
+    material.diffuseColor = color;
+    material.specularColor = new Color3(0.06, 0.06, 0.06);
+    return material;
   }
 
   private cloneAnimation(
@@ -203,36 +341,14 @@ export class AnimatedNPC {
     );
 
     if (!source) {
-      console.warn(
-        `[AnimatedNPC] Animation ${sourceName} was not found.`,
-      );
       return null;
     }
 
-    let missingTargets = 0;
-
-    const clone = source.clone(
+    return source.clone(
       cloneName,
-      (oldTarget) => {
-        const newTarget = targetByName.get(oldTarget.name);
-
-        if (!newTarget) {
-          missingTargets += 1;
-          return null;
-        }
-
-        return newTarget;
-      },
+      (oldTarget) => targetByName.get(oldTarget.name) ?? null,
       true,
     );
-
-    if (missingTargets > 0) {
-      console.warn(
-        `[AnimatedNPC] ${cloneName} has ${missingTargets} unmatched animation targets.`,
-      );
-    }
-
-    return clone;
   }
 
   private playAnimation(mode: "idle" | "walk"): void {
