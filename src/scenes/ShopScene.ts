@@ -85,7 +85,7 @@ function createShopSign(
   context.strokeRect(15, 15, 994, 226);
   context.fillStyle = "#f1dc9e";
   context.font = "700 86px Georgia";
-  context.textAlign = "center";
+  (context as unknown as CanvasRenderingContext2D).textAlign = "center";
   context.fillText("PĀKIHI MĀKETE", 512, 154);
   texture.update();
 
