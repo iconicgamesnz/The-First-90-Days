@@ -1,110 +1,102 @@
 import "./style.css";
 
-import {
-  Engine,
-  UniversalCamera,
-  Vector3,
-} from "@babylonjs/core";
+type SceneMode = "ambient" | "customer";
+type Speaker = "CUSTOMER" | "YOU";
 
-import {
-  createShopScene,
-} from "./scenes/ShopScene";
-import { applyPresentationPolish } from "./systems/PresentationPolish";
-
-interface SaleDetail {
-  item: string;
-  total: number;
+interface DialogueBeat {
+  speaker: Speaker;
+  text: string;
 }
 
-const canvas = document.getElementById("game") as HTMLCanvasElement;
-const titleScreen = document.getElementById("title-screen") as HTMLElement;
-const startButton = document.getElementById("start-game") as HTMLButtonElement;
-const hud = document.getElementById("hud") as HTMLElement;
-const cashValue = document.getElementById("cash-value") as HTMLElement;
-const reputationValue = document.getElementById("reputation-value") as HTMLElement;
-const capacityValue = document.getElementById("capacity-value") as HTMLElement;
-const confidenceValue = document.getElementById("confidence-value") as HTMLElement;
-const objectiveText = document.getElementById("objective-text") as HTMLElement;
-const interactionPrompt = document.getElementById("interaction-prompt") as HTMLElement;
-const lookHint = document.getElementById("look-hint") as HTMLElement;
+function requiredElement<T extends HTMLElement>(id: string): T {
+  const element = document.getElementById(id);
 
-if (
-  !canvas ||
-  !titleScreen ||
-  !startButton ||
-  !hud ||
-  !cashValue ||
-  !reputationValue ||
-  !capacityValue ||
-  !confidenceValue ||
-  !objectiveText ||
-  !interactionPrompt ||
-  !lookHint
-) {
-  throw new Error("The First 90 Days UI failed to initialise.");
+  if (!element) {
+    throw new Error(`Missing required element: #${id}`);
+  }
+
+  return element as T;
 }
 
-const engine = new Engine(
-  canvas,
-  true,
+const titleScreen = requiredElement<HTMLElement>("title-screen");
+const startButton = requiredElement<HTMLButtonElement>("start-game");
+const gameUi = requiredElement<HTMLElement>("game-ui");
+const ambientVideo = requiredElement<HTMLVideoElement>("ambient-video");
+const customerVideo = requiredElement<HTMLVideoElement>("customer-video");
+const doorChime = requiredElement<HTMLElement>("door-chime");
+
+const cashValue = requiredElement<HTMLElement>("cash-value");
+const reputationValue = requiredElement<HTMLElement>("reputation-value");
+const capacityValue = requiredElement<HTMLElement>("capacity-value");
+const confidenceValue = requiredElement<HTMLElement>("confidence-value");
+const objectiveText = requiredElement<HTMLElement>("objective-text");
+
+const dialoguePanel = requiredElement<HTMLElement>("dialogue-panel");
+const dialogueSpeaker = requiredElement<HTMLElement>("dialogue-speaker");
+const dialogueText = requiredElement<HTMLElement>("dialogue-text");
+const dialogueContinue = requiredElement<HTMLButtonElement>("dialogue-continue");
+
+const tillHotspot = requiredElement<HTMLButtonElement>("till-hotspot");
+const interactionPrompt = requiredElement<HTMLElement>("interaction-prompt");
+const dayComplete = requiredElement<HTMLElement>("day-complete");
+const replayDay = requiredElement<HTMLButtonElement>("replay-day");
+
+const openingDialogue: DialogueBeat[] = [
   {
-    preserveDrawingBuffer: false,
-    stencil: true,
-    antialias: true,
+    speaker: "CUSTOMER",
+    text: "Kia ora! Just this basket today, please.",
   },
-);
-
-const pixelRatio = window.devicePixelRatio || 1;
-engine.setHardwareScalingLevel(
-  Math.min(1.5, Math.max(1, pixelRatio / 2)),
-);
-
-const scene = createShopScene(engine, canvas);
-applyPresentationPolish(scene);
-
-if (!(scene.activeCamera instanceof UniversalCamera)) {
-  throw new Error("The player camera failed to initialise.");
-}
-
-const camera = scene.activeCamera;
-
-/*
- * Fixed-counter composition.
- * The player does not navigate the room. The camera behaves like a
- * person standing at the register: a comfortable forward view with
- * only enough look range to follow customers and glance at the POS.
- */
-camera.position.set(2.25, 1.74, 4.05);
-camera.setTarget(new Vector3(1.00, 1.32, -1.95));
-camera.inputs.clear();
-camera.speed = 0;
-camera.inertia = 0;
-camera.fov = 0.82;
-
-const centreYaw = camera.rotation.y;
-const centrePitch = camera.rotation.x;
-const maxYaw = 0.30;
-const maxPitch = 0.085;
-
-let targetYaw = centreYaw;
-let targetPitch = centrePitch;
-let lookPointerId: number | null = null;
-let lastLookX = 0;
-let lastLookY = 0;
-let hasStarted = false;
-let hasLookedAround = false;
+  {
+    speaker: "YOU",
+    text: "Kia ora — I'll put that through for you.",
+  },
+  {
+    speaker: "CUSTOMER",
+    text: "Sweet as. $18 is all good.",
+  },
+];
 
 let cash = 750;
 let reputation = 50;
 let capacity = 50;
 let confidence = 50;
+let dialogueIndex = 0;
+let hasStarted = false;
+let saleComplete = false;
+let scheduledTimers: number[] = [];
 
-function clamp(
-  value: number,
-  minimum: number,
-  maximum: number,
-): number {
-  return Math.max(minimum, Math.min(maximum, value));
+function schedule(callback: () => void, delay: number): void {
+  const timer = window.setTimeout(callback, delay);
+  scheduledTimers.push(timer);
+}
+
+function clearScheduledTimers(): void {
+  for (const timer of scheduledTimers) {
+    window.clearTimeout(timer);
+  }
+
+  scheduledTimers = [];
+}
+
+function playVideo(video: HTMLVideoElement): void {
+  void video.play().catch(() => {
+    /* The poster remains visible if the optional MP4 is not installed yet. */
+  });
+}
+
+function setScene(mode: SceneMode): void {
+  const showingAmbient = mode === "ambient";
+
+  ambientVideo.classList.toggle("active", showingAmbient);
+  customerVideo.classList.toggle("active", !showingAmbient);
+
+  if (showingAmbient) {
+    playVideo(ambientVideo);
+    customerVideo.pause();
+  } else {
+    playVideo(customerVideo);
+    ambientVideo.pause();
+  }
 }
 
 function updateBusinessHud(): void {
@@ -114,6 +106,121 @@ function updateBusinessHud(): void {
   confidenceValue.textContent = String(confidence);
 }
 
+function setObjective(text: string): void {
+  objectiveText.textContent = text;
+}
+
+function hideDialogue(): void {
+  dialoguePanel.classList.add("hidden");
+}
+
+function showDialogue(beat: DialogueBeat, showContinue = true): void {
+  dialogueSpeaker.textContent = beat.speaker;
+  dialogueText.textContent = beat.text;
+  dialogueContinue.classList.toggle("hidden", !showContinue);
+  dialoguePanel.classList.remove("hidden");
+}
+
+function showCurrentDialogue(): void {
+  const beat = openingDialogue[dialogueIndex];
+
+  if (!beat) {
+    beginTillInteraction();
+    return;
+  }
+
+  showDialogue(beat);
+}
+
+function beginTillInteraction(): void {
+  hideDialogue();
+  setObjective("Take payment at the till");
+  interactionPrompt.classList.remove("hidden");
+  tillHotspot.classList.remove("hidden");
+}
+
+function customerArrives(): void {
+  doorChime.classList.remove("hidden");
+  setObjective("A customer is coming to the counter");
+
+  schedule(() => {
+    doorChime.classList.add("hidden");
+    setScene("customer");
+    setObjective("Talk with your first customer");
+    dialogueIndex = 0;
+    showCurrentDialogue();
+  }, 1100);
+}
+
+function completeSale(): void {
+  if (saleComplete) {
+    return;
+  }
+
+  saleComplete = true;
+  tillHotspot.classList.add("hidden");
+  interactionPrompt.classList.add("hidden");
+
+  cash += 18;
+  reputation += 1;
+  confidence += 3;
+  updateBusinessHud();
+
+  setObjective("Sale complete");
+  showDialogue(
+    {
+      speaker: "CUSTOMER",
+      text: "Kia ora — thanks! Have a good one.",
+    },
+    false,
+  );
+
+  schedule(() => {
+    hideDialogue();
+    setScene("ambient");
+    setObjective("Day 1 complete — the shop keeps moving");
+  }, 1500);
+
+  schedule(() => {
+    dayComplete.classList.remove("hidden");
+  }, 2350);
+}
+
+function resetDayState(): void {
+  clearScheduledTimers();
+
+  cash = 750;
+  reputation = 50;
+  capacity = 50;
+  confidence = 50;
+  dialogueIndex = 0;
+  saleComplete = false;
+
+  updateBusinessHud();
+
+  dayComplete.classList.add("hidden");
+  dialoguePanel.classList.add("hidden");
+  dialogueContinue.classList.remove("hidden");
+  tillHotspot.classList.add("hidden");
+  interactionPrompt.classList.add("hidden");
+  doorChime.classList.add("hidden");
+
+  ambientVideo.currentTime = 0;
+  customerVideo.currentTime = 0;
+  setScene("ambient");
+  setObjective("Open the shop and watch the morning begin");
+}
+
+function beginDay(): void {
+  resetDayState();
+
+  schedule(() => {
+    setObjective("The shop is open — watch who's coming in");
+  }, 900);
+
+  schedule(customerArrives, 3300);
+}
+
 function beginGame(): void {
   if (hasStarted) {
     return;
@@ -121,97 +228,33 @@ function beginGame(): void {
 
   hasStarted = true;
   titleScreen.classList.add("hidden");
-  hud.classList.remove("hidden");
-  canvas.focus();
+  gameUi.classList.remove("hidden");
+  beginDay();
 }
 
 startButton.addEventListener("click", beginGame);
 
-canvas.addEventListener("pointerdown", (event) => {
-  if (!hasStarted || lookPointerId !== null) {
-    return;
-  }
+dialogueContinue.addEventListener("click", () => {
+  dialogueIndex += 1;
+  showCurrentDialogue();
+});
 
-  lookPointerId = event.pointerId;
-  lastLookX = event.clientX;
-  lastLookY = event.clientY;
-  canvas.setPointerCapture(event.pointerId);
+tillHotspot.addEventListener("click", completeSale);
 
-  if (!hasLookedAround) {
-    hasLookedAround = true;
-    lookHint.classList.add("faded");
+replayDay.addEventListener("click", () => {
+  beginDay();
+});
+
+ambientVideo.addEventListener("canplay", () => {
+  if (hasStarted && ambientVideo.classList.contains("active")) {
+    playVideo(ambientVideo);
   }
 });
 
-canvas.addEventListener("pointermove", (event) => {
-  if (event.pointerId !== lookPointerId) {
-    return;
+customerVideo.addEventListener("canplay", () => {
+  if (hasStarted && customerVideo.classList.contains("active")) {
+    playVideo(customerVideo);
   }
-
-  const deltaX = event.clientX - lastLookX;
-  const deltaY = event.clientY - lastLookY;
-
-  lastLookX = event.clientX;
-  lastLookY = event.clientY;
-
-  targetYaw = clamp(
-    targetYaw + deltaX * 0.0018,
-    centreYaw - maxYaw,
-    centreYaw + maxYaw,
-  );
-
-  targetPitch = clamp(
-    targetPitch + deltaY * 0.0012,
-    centrePitch - maxPitch,
-    centrePitch + maxPitch,
-  );
-});
-
-function releaseLook(event: PointerEvent): void {
-  if (event.pointerId !== lookPointerId) {
-    return;
-  }
-
-  lookPointerId = null;
-}
-
-canvas.addEventListener("pointerup", releaseLook);
-canvas.addEventListener("pointercancel", releaseLook);
-canvas.addEventListener("contextmenu", (event) => event.preventDefault());
-
-window.addEventListener("shop:customer-ready", () => {
-  objectiveText.textContent = "Your customer is ready to pay";
-  interactionPrompt.textContent = "TAP THE TILL SCREEN TO CHARGE $18";
-  interactionPrompt.classList.remove("hidden");
-  lookHint.classList.add("faded");
-});
-
-window.addEventListener("shop:sale-completed", (event) => {
-  const detail = (event as CustomEvent<SaleDetail>).detail;
-
-  cash += detail.total;
-  reputation = clamp(reputation + 1, 0, 100);
-  confidence = clamp(confidence + 3, 0, 100);
-  capacity = clamp(capacity, 0, 100);
-
-  updateBusinessHud();
-
-  interactionPrompt.classList.add("hidden");
-  objectiveText.textContent = "Sale complete — watch what happens next";
-
-  window.setTimeout(() => {
-    objectiveText.textContent = "Watch the shop: customers, stock and queues keep moving";
-  }, 2200);
 });
 
 updateBusinessHud();
-
-engine.runRenderLoop(() => {
-  camera.rotation.y += (targetYaw - camera.rotation.y) * 0.14;
-  camera.rotation.x += (targetPitch - camera.rotation.x) * 0.14;
-  scene.render();
-});
-
-window.addEventListener("resize", () => {
-  engine.resize();
-});
