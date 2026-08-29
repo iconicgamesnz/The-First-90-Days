@@ -6,81 +6,133 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   />
-  <meta name="theme-color" content="#10261c" />
+  <meta name="theme-color" content="#171008" />
   <title>The First 90 Days</title>
 </head>
 
 <body>
   <main id="game-shell">
-    <canvas id="game" tabindex="0"></canvas>
+    <section id="cinematic-stage" aria-label="Pākihi Mākete shop">
+      <div id="scene-fallback" aria-hidden="true"></div>
+
+      <video
+        id="ambient-video"
+        class="scene-video active"
+        muted
+        loop
+        playsinline
+        preload="auto"
+        poster="/game-assets/first-90-days-assets/generated-assets/starter-shop-first-person-reference.png"
+      >
+        <source src="/game-assets/video/day1-ambient.mp4" type="video/mp4" />
+      </video>
+
+      <video
+        id="customer-video"
+        class="scene-video"
+        muted
+        loop
+        playsinline
+        preload="auto"
+        poster="/game-assets/first-90-days-assets/generated-assets/starter-shop-first-person-reference.png"
+      >
+        <source src="/game-assets/video/day1-customer.mp4" type="video/mp4" />
+      </video>
+
+      <div class="cinematic-vignette" aria-hidden="true"></div>
+      <div id="door-chime" class="scene-caption hidden" aria-live="polite">
+        🔔 The door opens
+      </div>
+    </section>
 
     <section id="title-screen">
-      <div class="title-backdrop"></div>
-
+      <div class="title-wash"></div>
       <div class="title-content">
         <img
           id="brand-logo"
           src="/game-assets/first-90-days-assets/generated-assets/pakihi-makete-logo-reference.png"
           alt="Pākihi Mākete"
         />
-
-        <div class="title-eyebrow">YOUR BUSINESS. YOUR DECISIONS.</div>
-
+        <div class="title-eyebrow">AN INTERACTIVE BUSINESS STORY</div>
         <h1>
           <span>THE FIRST</span>
           <strong>90 DAYS</strong>
         </h1>
-
         <p>Run the counter. Read the room. Live with the result.</p>
-
-        <button id="start-game" type="button">
-          BEGIN DAY 1
-        </button>
+        <button id="start-game" type="button">BEGIN DAY 1</button>
       </div>
     </section>
 
-    <section id="hud" class="hidden">
-      <div class="top-hud">
-        <div class="hud-panel day-panel">
+    <section id="game-ui" class="hidden" aria-label="Business dashboard">
+      <header class="top-hud">
+        <div class="hud-chip day-chip">
           <small>DAY</small>
           <strong id="day-value">1</strong>
         </div>
 
-        <div class="business-metrics">
-          <div class="metric-chip">
+        <div class="metric-row">
+          <div class="hud-chip metric-chip">
             <small>REPUTATION</small>
             <strong id="reputation-value">50</strong>
           </div>
-          <div class="metric-chip">
+          <div class="hud-chip metric-chip">
             <small>CAPACITY</small>
             <strong id="capacity-value">50</strong>
           </div>
-          <div class="metric-chip">
+          <div class="hud-chip metric-chip">
             <small>CONFIDENCE</small>
             <strong id="confidence-value">50</strong>
           </div>
         </div>
 
-        <div class="hud-panel money">
+        <div class="hud-chip money-chip">
           <small>PŪTEA</small>
           <strong id="cash-value">$750</strong>
         </div>
-      </div>
+      </header>
 
       <div id="objective-panel">
         <small>CURRENT OBJECTIVE</small>
-        <strong id="objective-text">
-          Serve your first customer
-        </strong>
+        <strong id="objective-text">Open the shop and watch the morning begin</strong>
       </div>
+
+      <section id="dialogue-panel" class="hidden" aria-live="polite">
+        <div id="dialogue-speaker">CUSTOMER</div>
+        <p id="dialogue-text"></p>
+        <button id="dialogue-continue" type="button">CONTINUE</button>
+      </section>
+
+      <button
+        id="till-hotspot"
+        class="hotspot hidden"
+        type="button"
+        aria-label="Use the till to charge eighteen dollars"
+      >
+        <span class="hotspot-ring"></span>
+        <span>USE TILL</span>
+      </button>
 
       <div id="interaction-prompt" class="hidden">
-        TAP THE TILL SCREEN
+        TAP THE TILL TO CHARGE <strong>$18</strong>
       </div>
 
-      <div id="look-hint">
-        DRAG GENTLY TO LOOK AROUND
-      </div>
+      <section id="day-complete" class="hidden" aria-live="polite">
+        <small>DAY 1</small>
+        <h2>Your first sale is in the books.</h2>
+        <p>
+          The shop keeps moving. Every decision from here will change
+          what happens next.
+        </p>
+        <div class="result-line">
+          <span>Pūtea</span>
+          <strong>$750 → $768</strong>
+        </div>
+        <div class="result-line">
+          <span>Reputation</span>
+          <strong>50 → 51</strong>
+        </div>
+        <button id="replay-day" type="button">REPLAY DAY 1</button>
+      </section>
     </section>
   </main>
 
