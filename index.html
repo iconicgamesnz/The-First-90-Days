@@ -31,7 +31,7 @@
           <strong>90 DAYS</strong>
         </h1>
 
-        <p>Build it. Run it. See what happens.</p>
+        <p>Run the counter. Read the room. Live with the result.</p>
 
         <button id="start-game" type="button">
           BEGIN DAY 1
@@ -41,14 +41,29 @@
 
     <section id="hud" class="hidden">
       <div class="top-hud">
-        <div class="hud-panel">
+        <div class="hud-panel day-panel">
           <small>DAY</small>
           <strong id="day-value">1</strong>
         </div>
 
+        <div class="business-metrics">
+          <div class="metric-chip">
+            <small>REPUTATION</small>
+            <strong id="reputation-value">50</strong>
+          </div>
+          <div class="metric-chip">
+            <small>CAPACITY</small>
+            <strong id="capacity-value">50</strong>
+          </div>
+          <div class="metric-chip">
+            <small>CONFIDENCE</small>
+            <strong id="confidence-value">50</strong>
+          </div>
+        </div>
+
         <div class="hud-panel money">
           <small>PŪTEA</small>
-          <strong id="cash-value">$380</strong>
+          <strong id="cash-value">$750</strong>
         </div>
       </div>
 
@@ -60,10 +75,12 @@
       </div>
 
       <div id="interaction-prompt" class="hidden">
-        INTERACT
+        TAP THE TILL SCREEN
       </div>
 
-      <div id="crosshair"></div>
+      <div id="look-hint">
+        DRAG GENTLY TO LOOK AROUND
+      </div>
     </section>
   </main>
 
