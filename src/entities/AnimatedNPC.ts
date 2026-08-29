@@ -5,6 +5,7 @@ import {
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
+import type { Node } from "@babylonjs/core";
 
 import "@babylonjs/loaders/glTF";
 
@@ -131,7 +132,7 @@ export class AnimatedNPC {
         mesh.checkCollisions = false;
       }
 
-      const targetByName = new Map(
+      const targetByName = new Map<string, Node>(
         [
           ...character.meshes,
           ...character.transformNodes,
@@ -195,7 +196,7 @@ export class AnimatedNPC {
     sourceGroups: AnimationGroup[],
     sourceName: string,
     cloneName: string,
-    targetByName: Map<string, { name: string }>,
+    targetByName: ReadonlyMap<string, Node>,
   ): AnimationGroup | null {
     const source = sourceGroups.find(
       (group) => group.name === sourceName,
