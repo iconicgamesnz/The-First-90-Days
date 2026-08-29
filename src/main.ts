@@ -2,11 +2,13 @@ import "./style.css";
 
 import {
   Engine,
+  UniversalCamera,
 } from "@babylonjs/core";
 
 import {
   createShopScene,
 } from "./scenes/ShopScene";
+import { MobileControls } from "./systems/MobileControls";
 
 const canvas =
   document.getElementById(
@@ -28,11 +30,17 @@ const hud =
     "hud",
   ) as HTMLElement;
 
+const mobileControls =
+  document.getElementById(
+    "mobile-controls",
+  ) as HTMLElement;
+
 if (
   !canvas ||
   !titleScreen ||
   !startButton ||
-  !hud
+  !hud ||
+  !mobileControls
 ) {
   throw new Error(
     "The First 90 Days UI failed to initialise.",
@@ -55,6 +63,15 @@ const scene =
     canvas,
   );
 
+if (!(scene.activeCamera instanceof UniversalCamera)) {
+  throw new Error("The player camera failed to initialise.");
+}
+
+new MobileControls(
+  scene,
+  scene.activeCamera,
+);
+
 let hasStarted = false;
 
 function beginGame(): void {
@@ -69,6 +86,10 @@ function beginGame(): void {
   );
 
   hud.classList.remove(
+    "hidden",
+  );
+
+  mobileControls.classList.remove(
     "hidden",
   );
 
